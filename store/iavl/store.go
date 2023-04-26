@@ -230,6 +230,7 @@ func (st *Store) Delete(key []byte) {
 // is returned if any single version is invalid or the delete fails. All writes
 // happen in a single batch with a single commit.
 func (st *Store) DeleteVersions(versions ...int64) error {
+	fmt.Printf("deleting versions %v \n", versions)
 	return st.tree.DeleteVersions(versions...)
 }
 

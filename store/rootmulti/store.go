@@ -441,6 +441,7 @@ func (rs *Store) Commit() types.CommitID {
 // If clearStorePruningHeihgts is true, store's pruneHeights is appended to the
 // pruningHeights and reset after finishing pruning.
 func (rs *Store) PruneStores(clearStorePruningHeihgts bool, pruningHeights []int64) {
+	fmt.Println("pruning stores...")
 	if clearStorePruningHeihgts {
 		pruningHeights = append(pruningHeights, rs.pruneHeights...)
 	}
@@ -450,15 +451,22 @@ func (rs *Store) PruneStores(clearStorePruningHeihgts bool, pruningHeights []int
 	}
 
 	for key, store := range rs.stores {
+		fmt.Printf("trying %s \n", key)
 		if store.GetStoreType() == types.StoreTypeIAVL {
 			// If the store is wrapped with an inter-block cache, we must first unwrap
 			// it to get the underlying IAVL store.
 			store = rs.GetCommitKVStore(key)
 
 			if err := store.(*iavl.Store).DeleteVersions(pruningHeights...); err != nil {
+				fmt.Printf("failure: %s \n", err)
 				if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
+					fmt.Println("critical failure")
 					panic(err)
+				} else {
+					fmt.Println("but it was not critical")
 				}
+			} else {
+				fmt.Println("success")
 			}
 		}
 	}
